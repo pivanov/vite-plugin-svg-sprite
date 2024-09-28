@@ -1,0 +1,38 @@
+{
+  "name": "@pivanov/vite-plugin-svg-sprite",
+  "version": "1.0.0",
+  "description": "A versatile and lightweight Vite plugin for generating SVG sprites from your SVG files, enabling efficient use of SVG symbols in your application.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc"
+  },
+  "keywords": [
+    "vite",
+    "vite plugin",
+    "svg",
+    "svg sprite"
+  ],
+  "author": "pivanov",
+  "license": "MIT",
+  "homepage": "https://github.com/pivanov/vite-plugin-svg-sprite",
+  "bugs": {
+    "url": "https://github.com/pivanov/vite-plugin-svg-sprite/issues"
+  },
+  "peerDependencies": {
+    "vite": "^2 || ^3 || ^4 || ^5"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "chokidar": "^4.0.1",
+    "lodash.debounce": "^4.0.8",
+    "svgo": "^3.3.2",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/node": "^22.7.4",
+    "vite": "^5.4.8"
+  }
+}
