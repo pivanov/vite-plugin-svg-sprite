@@ -111,12 +111,28 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
   };
 
   // Write the sprite to the file system
+  // Write the sprite to the file system only if content has changed
   const writeSpriteToFile = (publicDir: string, fileName: string, spriteContent: string) => {
     const fullPath = path.join(publicDir, fileName);
+
+    // Ensure a newline at the end of the sprite content
+    const finalSpriteContent = spriteContent.trim() + '\n';
+
     try {
+      // Check if the file exists and read its current content
+      if (fs.existsSync(fullPath)) {
+        const existingContent = fs.readFileSync(fullPath, 'utf-8');
+
+        // Only write the file if the content has changed
+        if (existingContent === finalSpriteContent) {
+          // console.info(`No changes detected in ${fileName}, skipping file write.`);
+          return;
+        }
+      }
+
       fs.mkdirSync(publicDir, { recursive: true });
-      fs.writeFileSync(fullPath, spriteContent);
-      console.info(`SVG sprite written to: ${fullPath}`);
+      fs.writeFileSync(fullPath, finalSpriteContent);
+      // console.info(`SVG sprite written to: ${fullPath}`);
     } catch (error) {
       console.error(`Error writing sprite file: ${fullPath}`, error);
     }
@@ -135,7 +151,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
 
     const handleSvgChange = debounce(async (filePath: string, eventType: string) => {
       if (filePath.endsWith('.svg')) {
-        console.info(`SVG icon ${eventType}: ${filePath}`);
+        // console.info(`SVG icon ${eventType}: ${filePath}`);
         svgCache.clear(); // Clear cache on any SVG change
         await generateSvgSprite();
         triggerHMR();

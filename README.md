@@ -1,4 +1,4 @@
-# vite-plugin-svg-sprite
+# @pivanov/vite-plugin-svg-sprite
 
 A versatile and lightweight Vite plugin for generating SVG sprites from your SVG files, enabling efficient use of SVG symbols in your application.
 
@@ -6,19 +6,19 @@ A versatile and lightweight Vite plugin for generating SVG sprites from your SVG
 Install the plugin as a development dependency:
 
 ```bash
-npm install vite-plugin-svg-sprite --save-dev
+npm install @pivanov/vite-plugin-svg-sprite --save-dev
 ```
 
 or with yarn:
 
 ```bash
-yarn add vite-plugin-svg-sprite --dev
+yarn add @pivanov/vite-plugin-svg-sprite --dev
 ```
 
 or with pnpm:
 
 ```bash
-pnpm add vite-plugin-svg-sprite --dev
+pnpm add @pivanov/vite-plugin-svg-sprite --dev
 ```
 
 ## Usage
@@ -30,7 +30,7 @@ To use the plugin, add it to your `vite.config.js` (or `vite.config.ts` for Type
 
 ```typescript
 import path from 'path';
-import svgSpritePlugin from 'vite-plugin-svg-sprite';
+import svgSpritePlugin from '@pivanov/vite-plugin-svg-sprite';
 
 export default {
   plugins: [
