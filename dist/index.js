@@ -14,7 +14,22 @@ import { watch } from 'chokidar';
 import debounce from 'lodash.debounce';
 import { optimize } from 'svgo';
 const svgSpritePlugin = (options) => {
-    const { iconDirs, symbolId = '[dir]-[name]', svgDomId = 'svg-sprite', svgoConfig = {}, inject, fileName, } = options;
+    const { iconDirs, symbolId = '[dir]-[name]', svgDomId = 'svg-sprite', svgoConfig = {
+        plugins: [
+            {
+                name: 'preset-default',
+                params: {
+                    overrides: {
+                        removeTitle: false,
+                        removeViewBox: false,
+                        cleanupIds: {
+                            minify: false,
+                        },
+                    },
+                },
+            },
+        ],
+    }, inject, fileName, } = options;
     if (!symbolId.includes('[name]')) {
         throw new Error('SymbolId must contain [name] string!');
     }
@@ -26,11 +41,12 @@ const svgSpritePlugin = (options) => {
         const relativeDir = path.relative(process.cwd(), dir).replace(/\\/g, '/');
         const dirName = relativeDir.split('/').pop() || '';
         return symbolId
-            .replace('[dir]', dirName) // Use the subdirectory name (e.g., "icon" or "logo")
-            .replace('[name]', name); // Use the SVG file name (without the extension)
+            .replace('[dir]', dirName)
+            .replace('[name]', name);
     };
     let spriteContent = '';
     const svgCache = new Map();
+    let collectedDefs = ''; // Store all defs from the SVGs
     // Recursively scan directories for SVG files and generate the sprite content
     const scanDirForSvgFiles = (dir) => {
         const files = fs.readdirSync(dir);
@@ -39,7 +55,6 @@ const svgSpritePlugin = (options) => {
             const filePath = path.join(dir, file);
             const stat = fs.lstatSync(filePath);
             if (stat.isDirectory()) {
-                // Recursively scan subdirectories
                 allSvgFiles = allSvgFiles.concat(scanDirForSvgFiles(filePath));
             }
             else if (file.endsWith('.svg')) {
@@ -56,17 +71,22 @@ const svgSpritePlugin = (options) => {
             yield Promise.all(svgFiles.map((filePath) => __awaiter(void 0, void 0, void 0, function* () {
                 try {
                     const svgContent = yield fs.promises.readFile(filePath, 'utf-8');
-                    const cacheKey = filePath; // Cache based on file path
+                    const cacheKey = filePath;
                     if (!svgCache.has(cacheKey)) {
                         const optimizedSvg = optimize(svgContent, Object.assign(Object.assign({}, svgoConfig), { multipass: true })).data;
                         const $ = cheerio.load(optimizedSvg, { xmlMode: true });
                         const $svg = $('svg');
-                        const viewBox = $svg.attr('viewBox') || '0 0 24 24'; // Ensure viewBox exists
+                        const viewBox = $svg.attr('viewBox') || '0 0 24 24';
                         const $symbol = $('<symbol></symbol>')
                             .attr('id', generateSymbolId(filePath))
                             .attr('viewBox', viewBox);
                         // Append all children of the SVG to the <symbol> tag
                         $symbol.append($svg.children());
+                        // Extract and collect all <defs> from the SVG
+                        const $defs = $svg.find('defs');
+                        if ($defs.length > 0) {
+                            collectedDefs += $defs.html(); // Collect inner content of <defs>
+                        }
                         svgCache.set(cacheKey, $.html($symbol)); // Store optimized SVG in cache
                     }
                     svgSymbols += svgCache.get(cacheKey);
@@ -77,7 +97,9 @@ const svgSpritePlugin = (options) => {
             })));
         })));
         if (svgSymbols.length > 0) {
-            spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="display:none;" id="${svgDomId}">${svgSymbols}</svg>`;
+            // Add collected <defs> at the top of the sprite, before all <symbol> tags
+            const defsContent = collectedDefs ? `<defs>${collectedDefs}</defs>` : '';
+            spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="display:none;" id="${svgDomId}">${defsContent}${svgSymbols}</svg>`;
         }
         else {
             console.warn('No SVG symbols were generated.');
@@ -85,19 +107,24 @@ const svgSpritePlugin = (options) => {
         }
         return spriteContent;
     });
-    // Write the sprite to the file system
+    // Write the sprite to the file system only if content has changed
     const writeSpriteToFile = (publicDir, fileName, spriteContent) => {
         const fullPath = path.join(publicDir, fileName);
+        const finalSpriteContent = spriteContent.trim() + '\n';
         try {
+            if (fs.existsSync(fullPath)) {
+                const existingContent = fs.readFileSync(fullPath, 'utf-8');
+                if (existingContent === finalSpriteContent) {
+                    return;
+                }
+            }
             fs.mkdirSync(publicDir, { recursive: true });
-            fs.writeFileSync(fullPath, spriteContent);
-            console.info(`SVG sprite written to: ${fullPath}`);
+            fs.writeFileSync(fullPath, finalSpriteContent);
         }
         catch (error) {
             console.error(`Error writing sprite file: ${fullPath}`, error);
         }
     };
-    // Function to watch SVG directories using chokidar and trigger HMR
     const watchSvgDirs = (server) => {
         const watcher = watch(iconDirs, { ignored: /(^|[\\])\../, persistent: true });
         const triggerHMR = () => {
@@ -108,11 +135,9 @@ const svgSpritePlugin = (options) => {
         };
         const handleSvgChange = debounce((filePath, eventType) => __awaiter(void 0, void 0, void 0, function* () {
             if (filePath.endsWith('.svg')) {
-                console.info(`SVG icon ${eventType}: ${filePath}`);
                 svgCache.clear(); // Clear cache on any SVG change
                 yield generateSvgSprite();
                 triggerHMR();
-                // Write the sprite file during development mode
                 const publicDir = server.config.publicDir || 'public';
                 if (fileName) {
                     writeSpriteToFile(publicDir, fileName, spriteContent);
@@ -127,14 +152,13 @@ const svgSpritePlugin = (options) => {
         name: 'vite-plugin-svg-sprite',
         enforce: 'pre',
         configResolved: () => __awaiter(void 0, void 0, void 0, function* () {
-            yield generateSvgSprite(); // Generate sprite when the config is resolved
+            yield generateSvgSprite();
         }),
         configureServer: (server) => {
-            watchSvgDirs(server); // Watch for changes during dev and trigger HMR
+            watchSvgDirs(server);
         },
         transformIndexHtml: (html) => {
             if (inject) {
-                // Load the HTML into Cheerio for DOM manipulation
                 const $ = cheerio.load(html);
                 switch (inject) {
                     case 'body-first':
@@ -149,7 +173,7 @@ const svgSpritePlugin = (options) => {
         },
         generateBundle(options) {
             if (fileName && !inject) {
-                const publicDir = options.dir || 'public'; // Output to public by default
+                const publicDir = options.dir || 'public';
                 writeSpriteToFile(publicDir, fileName, spriteContent);
             }
         },
