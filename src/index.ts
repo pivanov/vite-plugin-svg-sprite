@@ -121,7 +121,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
       }));
     }));
 
-    const style = 'position:absolute;display:block;width:0;height:0;';
+    const style = 'position:absolute;width:0;height:0;';
 
     if (svgSymbols.length > 0) {
       // Add collected <defs> at the top of the sprite, before all <symbol> tags
