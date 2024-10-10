@@ -14,19 +14,13 @@ jobs:
   review:
     runs-on: ubuntu-latest
     if: |
-      (
-        github.event_name == 'pull_request'
-      ) ||
-      (
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request != null &&
-        (
-          contains(github.event.comment.body, 'please review') ||
-          contains(github.event.comment.body, 'review please') ||
-          contains(github.event.comment.body, 'request review')
-        )
-      )
-
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       (contains(github.event.comment.body, '/review') ||
+        contains(github.event.comment.body, 'please review') ||
+        contains(github.event.comment.body, 'review please') ||
+        contains(github.event.comment.body, 'request review')))
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -40,10 +34,3 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: "gpt-4-1106-preview"
           exclude: "**/*.json, **/*.md, **/*.lock, **/dist/**, **/node_modules/**, **/.github/**, **/.vscode/**"
-
-      - name: Debug Info
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Event type: ${{ github.event.action }}"
-          echo "Is PR?: ${{ github.event.issue.pull_request != null }}"
-          echo "Comment body: ${{ github.event.comment.body }}"
