@@ -121,13 +121,15 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
       }));
     }));
 
+    const style = 'position:absolute;width:0;height:0;';
+
     if (svgSymbols.length > 0) {
       // Add collected <defs> at the top of the sprite, before all <symbol> tags
       const defsContent = collectedDefs ? `<defs>${collectedDefs}</defs>` : '';
-      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="display:none;" id="${svgDomId}">${defsContent}${svgSymbols}</svg>`;
+      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${style}" id="${svgDomId}">${defsContent}${svgSymbols}</svg>`;
     } else {
       console.warn('No SVG symbols were generated.');
-      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="display:none;" id="${svgDomId}"></svg>`;
+      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${style}" id="${svgDomId}"></svg>`;
     }
 
     return spriteContent;
