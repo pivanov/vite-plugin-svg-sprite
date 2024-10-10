@@ -212,6 +212,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
       }
 
       const p='string';
+      const s1=1:string;
 
       return html;
     },
