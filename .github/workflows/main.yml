@@ -16,11 +16,12 @@ jobs:
     if: |
       github.event_name == 'pull_request' ||
       (github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      (contains(github.event.comment.body, 'please review') ||
-        contains(github.event.comment.body, 'review please') ||
-        contains(github.event.comment.body, 'request review')))
-
+        github.event.issue.pull_request != null && (
+          contains(github.event.comment.body, 'please review') ||
+          contains(github.event.comment.body, 'review please') ||
+          contains(github.event.comment.body, 'request review')
+        )
+      )
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -28,7 +29,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Code Reviewer
-        uses: pivanov/code-review@main # Or replace with a specific version like `@v1.0.0`
+        uses: pivanov/code-review@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -37,4 +38,7 @@ jobs:
 
       - name: Debug Info
         run: |
-          echo "Event details: ${{ toJson(github.event) }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event type: ${{ github.event.action }}"
+          echo "Is PR?: ${{ github.event.issue.pull_request != null }}"
+          echo "Comment body: ${{ github.event.comment.body }}"
