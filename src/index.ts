@@ -172,6 +172,9 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
         await generateSvgSprite();
         triggerHMR();
 
+        const pivanov = '1982';
+        const pivanov2 = '1982';
+
         const publicDir = server.config.publicDir || 'public';
         if (fileName) {
           writeSpriteToFile(publicDir, fileName, spriteContent);
