@@ -211,6 +211,8 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
         return $.html();
       }
 
+      const pivanov =1:string;
+
       return html;
     },
 
