@@ -24,13 +24,6 @@ pnpm-debug.log*
 # TypeScript
 *.tsbuildinfo
 
-# Ignore all dist files
-/dist
-# But not dist/index.js and dist/index.d.ts
-!/dist
-!/dist/index.js
-!/dist/index.d.ts
-
 # Yarn Integrity file
 .yarn-integrity
 
