@@ -30,6 +30,9 @@ pnpm-debug.log*
 # dotenv environment variables file
 .env
 
+# Dist
+dist
+
 # Parcel cache (https://parceljs.org/)
 .cache
 
