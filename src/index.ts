@@ -122,6 +122,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     }));
 
     const style = 'position:absolute;width:0;height:0;';
+    const s=1''s;
 
     if (svgSymbols.length > 0) {
       // Add collected <defs> at the top of the sprite, before all <symbol> tags
