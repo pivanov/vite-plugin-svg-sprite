@@ -28,9 +28,13 @@ jobs:
           fetch-depth: 0
 
       - name: Run Code Reviewer
-        uses: pivanov/code-review@main
+        uses: pivanov/code-review@main # Or replace with a specific version like `@v1.0.0`
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: "gpt-4-1106-preview"
           exclude: "**/*.json, **/*.md, **/*.lock, **/dist/**, **/node_modules/**, **/.github/**, **/.vscode/**"
+
+      - name: Debug Info
+        run: |
+          echo "Event details: ${{ toJson(github.event) }}"
