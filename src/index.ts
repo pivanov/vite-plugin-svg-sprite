@@ -8,6 +8,16 @@ import { optimize } from 'svgo';
 
 import type { Plugin, ViteDevServer } from 'vite';
 
+let name = "Alice";
+let age = 25;
+
+export const doSomething = () => {
+  return {
+    name,
+    age,
+  };
+};
+
 interface SvgSpritePluginOptions {
   iconDirs: string[];
   symbolId: string;
