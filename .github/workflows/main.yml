@@ -8,18 +8,19 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write  # Allow writing to pull requests (for comments and reviews)
 
 jobs:
   review:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3 # Use your PAT to access private repos
+        uses: actions/checkout@v3  # Checkout the repository to run the review action
 
       - name: Run Code Reviewer
-        uses: pivanov/code-review@main # Ensure 'main' branch exists
+        uses: pivanov/code-review@main  # Make sure this points to your action
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub's default token for the current repo
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_MODEL: "gpt-4"
-          exclude: "**/*.json, **/*.md"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the default GitHub token for access
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # Your OpenAI API key
+          OPENAI_API_MODEL: "gpt-4"  # Optional: specify the model to use (defaults to GPT-4)
+          exclude: "**/*.json, **/*.md"  # Optional: exclude certain files from being reviewed
