@@ -1,0 +1,25 @@
+name: Code Reviewer
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3 # Use your PAT to access private repos
+
+      - name: Run Code Reviewer
+        uses: pivanov/code-review@main # Ensure 'main' branch exists
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub's default token for the current repo
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_MODEL: "gpt-4"
+          exclude: "**/*.json, **/*.md"
