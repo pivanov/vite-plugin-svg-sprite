@@ -8,6 +8,27 @@ import { optimize } from 'svgo';
 
 import type { Plugin, ViteDevServer } from 'vite';
 
+const name = "Alice";
+const age = 25;
+
+/**
+ * Returns an object containing the name and age of a person.
+ *
+ * TODO: This function is currently a placeholder.
+ * Intended functionality:
+ * - Fetch user data from an API or database
+ * - Process the data (e.g., calculate age based on birthdate)
+ * - Return the processed user information
+ *
+ * @returns {{ name: string, age: number }}
+ */
+export const doSomething = () => {
+  return {
+    name,
+    age,
+  };
+};
+
 interface SvgSpritePluginOptions {
   iconDirs: string[];
   symbolId: string;
