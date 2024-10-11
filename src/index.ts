@@ -8,9 +8,10 @@ import { optimize } from 'svgo';
 
 import type { Plugin, ViteDevServer } from 'vite';
 
-let name = "Alice";
-let age = 25;
+const name = "Alice";
+const age = 25;
 
+// this is a test function used to test the code review
 export const doSomething = () => {
   return {
     name,
