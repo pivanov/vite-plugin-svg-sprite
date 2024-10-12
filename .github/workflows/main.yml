@@ -4,6 +4,15 @@ on:
   issue_comment:
     types: [created]
   workflow_dispatch: # Enables manual trigger
+    inputs:
+      cmd:
+        description: 'Command to run (/review or /chat)'
+        required: true
+        default: '/review'
+      comment_body:
+        description: 'Comment body for the action'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -11,7 +20,7 @@ permissions:
 
 jobs:
   review:
-    if: startsWith(github.event.comment.body, '/review')
+    if: startsWith(github.event.comment.body || github.event.inputs.cmd, '/review')
     runs-on: ubuntu-latest
     steps:
       - name: Log Event Data
@@ -25,8 +34,9 @@ jobs:
           OPENAI_API_MODEL: "gpt-4o-mini"
           cmd: review
           exclude: "**/*.json, **/*.md, **/*.lock, **/dist/**, **/node_modules/**, **/.github/**, **/.vscode/**"
+
   chat:
-    if: startsWith(github.event.comment.body, '/chat')
+    if: startsWith(github.event.comment.body || github.event.inputs.cmd, '/chat')
     runs-on: ubuntu-latest
     steps:
       - name: Log Event Data
@@ -39,4 +49,4 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: "gpt-4o-mini"
           cmd: chat
-          comment_body: ${{ github.event.comment.body }}
+          comment_body: ${{ github.event.comment.body || github.event.inputs.comment_body }}
