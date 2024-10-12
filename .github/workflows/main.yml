@@ -19,7 +19,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: "gpt-4o-mini"
           cmd: review
-          lang: en
           exclude: "**/*.json, **/*.md, **/*.lock, **/dist/**, **/node_modules/**, **/.github/**, **/.vscode/**"
   chat:
     if: startsWith(github.event.comment.body, '/chat')
@@ -32,4 +31,3 @@ jobs:
           OPENAI_API_MODEL: "gpt-4o-mini"
           cmd: chat
           comment_body: ${{ github.event.comment.body }}
-          lang: en
