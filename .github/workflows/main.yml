@@ -3,8 +3,6 @@ name: Code Reviewer
 on:
   issue_comment:
     types: [created]
-  pull_request:
-    types: [opened, synchronize]
 
 permissions:
   contents: read
@@ -12,18 +10,26 @@ permissions:
 
 jobs:
   review:
+    if: startsWith(github.event.comment.body, '/review')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Code Reviewer
-        # uses: pivanov/code-review@main
-        uses: freeedcom/ai-codereviewer@main
+      - uses: pivanov/code-review@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: "gpt-4o-mini"
+          cmd: review
+          lang: en
           exclude: "**/*.json, **/*.md, **/*.lock, **/dist/**, **/node_modules/**, **/.github/**, **/.vscode/**"
+  chat:
+    if: startsWith(github.event.comment.body, '/chat')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pivanov/code-review@main
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_MODEL: "gpt-4o-mini"
+          cmd: chat
+          comment_body: ${{ github.event.comment.body }}
+          lang: en
