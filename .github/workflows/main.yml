@@ -13,6 +13,10 @@ jobs:
     if: startsWith(github.event.comment.body, '/review')
     runs-on: ubuntu-latest
     steps:
+      - name: Log Event Data
+        run: |
+          echo "Event: ${{ toJson(github.event) }}"
+
       - uses: pivanov/code-review@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -24,6 +28,10 @@ jobs:
     if: startsWith(github.event.comment.body, '/chat')
     runs-on: ubuntu-latest
     steps:
+      - name: Log Event Data
+        run: |
+          echo "Event: ${{ toJson(github.event) }}"
+
       - uses: pivanov/code-review@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
