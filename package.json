@@ -1,6 +1,6 @@
 {
   "name": "@pivanov/vite-plugin-svg-sprite",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A versatile and lightweight Vite plugin for generating SVG sprites from your SVG files, enabling efficient use of SVG symbols in your application.",
   "type": "module",
   "main": "dist/index.js",
