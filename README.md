@@ -1,32 +1,32 @@
 # @pivanov/vite-plugin-svg-sprite
 
-A versatile and lightweight Vite plugin for generating SVG sprites from your SVG files, enabling efficient use of SVG symbols in your application.
+A versatile and lightweight Vite plugin for generating SVG sprites from your SVG files, with support for HMR, SVGO optimization, and flexible configuration options.
 
-## install
-Install the plugin as a development dependency:
+## Features
+
+- ⚡️ Fast SVG sprite generation
+- 🔄 Hot Module Reloading (HMR) support
+- 🎨 Preserves important SVG attributes (viewBox, fill, stroke)
+- 🛠️ SVGO optimization built-in
+- 📁 Multiple icon directory support
+- 🔧 Configurable symbol IDs
+- 💉 Optional HTML injection
+- 📦 File output support
+- 👀 Watch mode support
+
+## Install
 
 ```bash
-npm install @pivanov/vite-plugin-svg-sprite --save-dev
-```
-
-or with yarn:
-
-```bash
-yarn add @pivanov/vite-plugin-svg-sprite --dev
-```
-
-or with pnpm:
-
-```bash
-pnpm add @pivanov/vite-plugin-svg-sprite --dev
+npm i -D @pivanov/vite-plugin-svg-sprite
+# or
+yarn add -D @pivanov/vite-plugin-svg-sprite
+# or
+pnpm add -D @pivanov/vite-plugin-svg-sprite
 ```
 
 ## Usage
 
-To use the plugin, add it to your `vite.config.js` (or `vite.config.ts` for TypeScript projects):
-
-> [!NOTE]
-> Note that one of inject or fileName must be provided.
+Add the plugin to your `vite.config.ts` (or `vite.config.js`):
 
 ```typescript
 import path from 'path';
@@ -35,110 +35,147 @@ import svgSpritePlugin from '@pivanov/vite-plugin-svg-sprite';
 export default {
   plugins: [
     svgSpritePlugin({
-      /**
-       * Specify directories containing SVG files
-       * @type {string[]}
-       */
-      iconDirs: [path.resolve(process.cwd(), 'src/assets/svgs/icons')],
-
-      /**
-       * Format for generating unique symbol IDs for each SVG.
-       * The default format is [dir]-[name], where:
-       * - [dir]: directory name where the SVG resides
-       * - [name]: SVG file name (without the extension)
-       *
-       * Example: "icons-home" for `src/assets/svgs/icons/home.svg`
-       * @default '[dir]-[name]'
-       */
+      iconDirs: [path.resolve(process.cwd(), 'src/assets/icons')],
       symbolId: '[dir]-[name]',
-
-      /**
-       * Custom DOM ID to use for the <svg> sprite container.
-       * @default 'svg-sprite'
-       */
-      customDomId: 'svg-sprite',
-
-      /**
-       * SVGO configuration object for optimizing SVGs.
-       * @default {}
-       */
-      svgoConfig: {},
-
-      /**
-       * Where to inject the generated <svg> sprite in the HTML:
-       * - 'body-first': Insert at the beginning of the <body>.
-       * - 'body-last': Insert at the end of the <body>.
-       * @default 'body-last'
-       */
+      svgDomId: 'svg-sprite',
       inject: 'body-last',
-
-      /**
-       * Custom file name for the generated SVG sprite file (if not inlined).
-       */
-      fileName: 'svg-sprite.svg',
     }),
   ],
 };
 ```
 
-### Using the SVG Sprite in Your Application
+### Using SVG Sprites
 
-Once the plugin generates the SVG sprite, you can reference individual icons by their `symbolId` in your application code:
+You can use the generated sprites in two ways:
 
-```jsx
-// React or Vue component
-export const App = () => {
-  return (
-    <svg>
-      <use xlinkHref="#icons-home" />
-    </svg>
-  );
-};
+1. **Direct Import** (when not using inject option):
+```typescript
+import svgSpriteString from 'virtual:svg-sprite';
+
+const container = document.createElement('div');
+const shadow = container.attachShadow({ mode: 'open' });
+const sprite = new DOMParser()
+  .parseFromString(svgSpriteString, 'image/svg+xml')
+  .documentElement;
+
+shadow.appendChild(sprite);
+document.body.appendChild(container);
 ```
 
-You can also manage the `width` and `height` attributes of the SVG by specifying them directly or by using a `size` object for convenience:
-
-```jsx
-// React or Vue component
-export const App = () => {
-  const size = { width: 24, height: 24 }; // Custom size
-  return (
-    <svg {...size}>
-      <use xlinkHref="#icons-home" />
-    </svg>
-  );
-};
-```
-
-### Example of Injected SVG
-
-The plugin will inject the following content into your HTML:
-
+2. **Reference in HTML** (works with both methods):
 ```html
-<body>
-  <svg xmlns="http://www.w3.org/2000/svg" style="display:none;" id="svg-sprite">
-    <symbol id="icons-home" viewBox="0 0 24 24">
-      <!-- SVG path data here -->
-    </symbol>
-    <!-- Additional symbols for other icons -->
-  </svg>
-</body>
+<svg>
+  <use href="#icons-home" />
+</svg>
 ```
 
 ## Configuration Options
 
-| Option         | Type       | Default          | Description                                                                  |
-| :------------- | :--------- | :--------------- | :--------------------------------------------------------------------------- |
-| `iconDirs`     | `string[]` | `[]`             | Directories where your SVG icons are located.                                |
-| `symbolId`     | `string`   | `[dir]-[name]`   | Format for the `symbol` ID. Use `[dir]` and `[name]` as placeholders.        |
-| `customDomId`  | `string`   | `svg-sprite`     | ID of the `<svg>` element containing all the symbols.                        |
-| `svgoConfig`   | `object`   | `{}`             | Configuration options for [SVGO](https://github.com/svg/svgo) optimization.  |
-| `inject`       | `string`   | `'body-last'`    | Where to inject the SVG sprite in the HTML: `'body-first'` or `'body-last'`. |
-| `fileName`     | `string`   | `svg-sprite.svg` | Custom file name for the generated sprite file.                              |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `iconDirs` | `string[]` | Required | Directories containing SVG files to be processed into sprites |
+| `symbolId` | `string` | `[dir]-[name]` | Format for symbol IDs. Uses placeholders: `[dir]` (directory name) and `[name]` (file name without extension). Example: `[dir]-[name]` for `icons/home.svg` becomes `icons-home` |
+| `svgDomId` | `string` | `svg-sprite` | ID attribute for the root SVG sprite element in the DOM |
+| `inject` | `'body-last' \| 'body-first'` | `undefined` | Controls where the sprite is injected in the HTML. `body-first` injects at start of body, `body-last` at the end |
+| `svgoConfig` | `object` | See SVGO section | Configuration for SVGO optimization. Override default settings for SVG optimization |
+| `fileName` | `string` | `undefined` | If provided, saves the sprite to a file instead of injecting it. Example: `sprite.svg` |
+| `verbose` | `boolean` | `true` | Enable/disable detailed logging output during plugin operation |
+
+### Default SVGO Configuration
+
+The plugin comes with optimized SVGO defaults:
+
+```typescript
+{
+  plugins: [
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          removeViewBox: false,
+          removeUnknownsAndDefaults: {
+            defaultAttrs: false,
+          },
+          cleanupIds: {
+            minify: false,
+          },
+          mergePaths: false,
+        },
+      },
+    },
+    {
+      name: 'removeAttributesBySelector',
+      params: {
+        selectors: [
+          {
+            selector: '*:not(svg)',
+            preserve: ['stroke*', 'fill*'],
+          },
+        ],
+      },
+    },
+  ],
+}
+```
+
+## Examples
+
+### Basic Usage with HTML Injection
+
+```typescript
+svgSpritePlugin({
+  iconDirs: ['src/icons'],
+  symbolId: 'icon-[name]',
+  inject: 'body-last'
+})
+```
+
+### File Output Without Injection
+
+```typescript
+svgSpritePlugin({
+  iconDirs: ['src/icons'],
+  symbolId: 'icon-[name]',
+  fileName: 'sprite.svg'
+})
+```
+
+### With Custom SVGO Config
+
+```typescript
+svgSpritePlugin({
+  iconDirs: ['src/icons'],
+  symbolId: 'icon-[name]',
+  svgoConfig: {
+    plugins: [
+      {
+        name: 'removeAttrs',
+        params: { attrs: '(fill|stroke)' }
+      }
+    ]
+  }
+})
+```
+
+## Generated Sprite Example
+
+The plugin generates a sprite that looks like this:
+
+```html
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;" id="svg-sprite">
+  <defs>
+    <!-- Collected definitions from SVGs -->
+  </defs>
+  <symbol id="icons-home" viewBox="0 0 24 24">
+    <!-- SVG content -->
+  </symbol>
+  <!-- More symbols... -->
+</svg>
+```
 
 ## Author
 
-Created by [pivanov](https://github.com/pivanov).
+Created by [pivanov](https://github.com/pivanov)
 
 ## License
 
