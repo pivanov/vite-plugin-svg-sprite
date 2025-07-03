@@ -192,9 +192,10 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
         }
       }
 
-      fs.mkdirSync(publicDir, { recursive: true });
+      const dir = path.dirname(fullPath)
+      fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(fullPath, finalSpriteContent);
-      log.info(`💫 SVG sprite saved in ${publicDir}`);
+      log.info(`💫 SVG sprite saved in ${dir}`);
     } catch (error) {
       log.error(`Error writing sprite file: ${fullPath}`, error);
     }
