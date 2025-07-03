@@ -13,7 +13,7 @@ interface SvgSpritePluginOptions {
   svgDomId?: string;
   inject?: 'body-last' | 'body-first';
   svgoConfig?: object;
-  fileName?: string;
+  filePath?: string;
   verbose?: boolean;
 }
 
@@ -59,7 +59,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
       ],
     },
     inject,
-    fileName,
+    filePath,
     verbose = true,
   } = options;
 
@@ -177,10 +177,10 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
 
   const writeSpriteToFile = (
     publicDir: string,
-    fileName: string,
+    filePath: string,
     spriteContent: string,
   ) => {
-    const fullPath = path.join(publicDir, fileName);
+    const fullPath = path.join(publicDir, filePath);
     const finalSpriteContent = `${spriteContent.trim()}\n`;
 
     try {
@@ -247,9 +247,9 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
             await generateSvgSprite();
             log.info('💫 SVG changed');
 
-            if (fileName) {
+            if (filePath) {
               const publicDir = config.build.outDir;
-              writeSpriteToFile(publicDir, fileName, spriteContent);
+              writeSpriteToFile(publicDir, filePath, spriteContent);
             }
 
             // Touch entry file to trigger rebuild
@@ -365,9 +365,9 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
 
     generateBundle(this, options) {
       // Write sprite file during bundle generation
-      if (fileName && !hasGeneratedSprite) {
+      if (filePath && !hasGeneratedSprite) {
         const publicDir = options.dir || 'public';
-        writeSpriteToFile(publicDir, fileName, spriteContent);
+        writeSpriteToFile(publicDir, filePath, spriteContent);
         // Mark that we've generated the sprite to prevent multiple writes
         hasGeneratedSprite = true;
       }

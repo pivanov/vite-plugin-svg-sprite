@@ -78,7 +78,7 @@ document.body.appendChild(container);
 | `svgDomId` | `string` | `svg-sprite` | ID attribute for the root SVG sprite element in the DOM |
 | `inject` | `'body-last' \| 'body-first'` | `undefined` | Controls where the sprite is injected in the HTML. `body-first` injects at start of body, `body-last` at the end |
 | `svgoConfig` | `object` | See SVGO section | Configuration for SVGO optimization. Override default settings for SVG optimization |
-| `fileName` | `string` | `undefined` | If provided, saves the sprite to a file instead of injecting it. Example: `sprite.svg` |
+| `filePath` | `string` | `undefined` | If provided, saves the sprite to a file instead of injecting it. Example: `assets/sprite.svg` |
 | `verbose` | `boolean` | `true` | Enable/disable detailed logging output during plugin operation |
 
 ### Default SVGO Configuration
@@ -136,7 +136,7 @@ svgSpritePlugin({
 svgSpritePlugin({
   iconDirs: ['src/icons'],
   symbolId: 'icon-[name]',
-  fileName: 'sprite.svg'
+  filePath: 'assets/sprite.svg'
 })
 ```
 
