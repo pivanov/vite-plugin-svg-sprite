@@ -93,7 +93,6 @@ The plugin comes with optimized SVGO defaults:
       name: 'preset-default',
       params: {
         overrides: {
-          removeViewBox: false,
           removeUnknownsAndDefaults: {
             defaultAttrs: false,
           },
@@ -103,6 +102,11 @@ The plugin comes with optimized SVGO defaults:
           mergePaths: false,
         },
       },
+    },
+    // Explicitly disable removeViewBox to preserve viewBox attributes
+    {
+      name: 'removeViewBox',
+      active: false,
     },
     {
       name: 'removeAttributesBySelector',

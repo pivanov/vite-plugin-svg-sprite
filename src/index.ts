@@ -32,8 +32,6 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
           name: 'preset-default',
           params: {
             overrides: {
-              // Preserve viewBox and other important attributes
-              removeViewBox: false,
               removeUnknownsAndDefaults: {
                 defaultAttrs: false,
               },
@@ -45,6 +43,11 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
               mergePaths: false,
             },
           },
+        },
+        // Explicitly disable removeViewBox to preserve viewBox attributes
+        {
+          name: 'removeViewBox',
+          active: false,
         },
         {
           name: 'removeAttributesBySelector',
