@@ -14,6 +14,7 @@ interface SvgSpritePluginOptions {
   inject?: 'body-last' | 'body-first';
   svgoConfig?: object;
   fileName?: string;
+  outputDir?: string;
   verbose?: boolean;
 }
 
@@ -60,6 +61,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     },
     inject,
     fileName,
+    outputDir,
     verbose = true,
   } = options;
 
@@ -72,6 +74,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
   let collectedDefs = '';
   let watcher: ReturnType<typeof watch> | null = null;
   let hasGeneratedSprite = false;
+  let viteConfig: any = null;
 
   const log = {
     info: (msg: string) => verbose && console.log(`\n${msg}`),
@@ -179,22 +182,29 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     publicDir: string,
     fileName: string,
     spriteContent: string,
+    assetsDir?: string,
   ) => {
-    const fullPath = path.join(publicDir, fileName);
+    const targetDir = outputDir
+      ? path.resolve(publicDir, outputDir)
+      : assetsDir
+        ? path.join(publicDir, assetsDir)
+        : publicDir;
+
+    const fullPath = path.join(targetDir, fileName);
     const finalSpriteContent = `${spriteContent.trim()}\n`;
 
     try {
       if (fs.existsSync(fullPath)) {
         const existingContent = fs.readFileSync(fullPath, 'utf-8');
         if (existingContent === finalSpriteContent) {
-          log.info(`💫 SVG sprite already exists in ${publicDir}`);
+          log.info(`💫 SVG sprite already exists in ${path.relative(process.cwd(), targetDir)}`);
           return;
         }
       }
 
-      fs.mkdirSync(publicDir, { recursive: true });
+      fs.mkdirSync(targetDir, { recursive: true });
       fs.writeFileSync(fullPath, finalSpriteContent);
-      log.info(`💫 SVG sprite saved in ${publicDir}`);
+      log.info(`💫 SVG sprite saved in ${path.relative(process.cwd(), targetDir)}`);
     } catch (error) {
       log.error(`Error writing sprite file: ${fullPath}`, error);
     }
@@ -222,6 +232,8 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     enforce: 'pre',
 
     configResolved: async (config) => {
+      viteConfig = config;
+
       // Reset the generation flag
       hasGeneratedSprite = false;
 
@@ -248,7 +260,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
 
             if (fileName) {
               const publicDir = config.build.outDir;
-              writeSpriteToFile(publicDir, fileName, spriteContent);
+              writeSpriteToFile(publicDir, fileName, spriteContent, config.build.assetsDir);
             }
 
             // Touch entry file to trigger rebuild
@@ -366,7 +378,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
       // Write sprite file during bundle generation
       if (fileName && !hasGeneratedSprite) {
         const publicDir = options.dir || 'public';
-        writeSpriteToFile(publicDir, fileName, spriteContent);
+        writeSpriteToFile(publicDir, fileName, spriteContent, viteConfig?.build?.assetsDir);
         // Mark that we've generated the sprite to prevent multiple writes
         hasGeneratedSprite = true;
       }
