@@ -79,6 +79,7 @@ document.body.appendChild(container);
 | `inject` | `'body-last' \| 'body-first'` | `undefined` | Controls where the sprite is injected in the HTML. `body-first` injects at start of body, `body-last` at the end |
 | `svgoConfig` | `object` | See SVGO section | Configuration for SVGO optimization. Override default settings for SVG optimization |
 | `fileName` | `string` | `undefined` | If provided, saves the sprite to a file instead of injecting it. Example: `sprite.svg` |
+| `outputDir` | `string` | `undefined` | Custom output directory for the sprite file. If not specified, uses Vite's `assetsDir` (typically `assets/`) when `fileName` is provided |
 | `verbose` | `boolean` | `true` | Enable/disable detailed logging output during plugin operation |
 
 ### Default SVGO Configuration
@@ -137,6 +138,41 @@ svgSpritePlugin({
   iconDirs: ['src/icons'],
   symbolId: 'icon-[name]',
   fileName: 'sprite.svg'
+})
+```
+
+### File Output to Assets Directory (Default)
+
+```typescript
+svgSpritePlugin({
+  iconDirs: ['src/icons'],
+  symbolId: 'icon-[name]',
+  fileName: 'sprite.svg'
+  // Will output to dist/assets/sprite.svg by default
+})
+```
+
+### File Output to Custom Directory
+
+```typescript
+svgSpritePlugin({
+  iconDirs: ['src/icons'],
+  symbolId: 'icon-[name]',
+  fileName: 'sprite.svg',
+  outputDir: 'static/sprites'
+  // Will output to dist/static/sprites/sprite.svg
+})
+```
+
+### File Output to Root Directory
+
+```typescript
+svgSpritePlugin({
+  iconDirs: ['src/icons'],
+  symbolId: 'icon-[name]',
+  fileName: 'sprite.svg',
+  outputDir: '.'
+  // Will output to dist/sprite.svg
 })
 ```
 
