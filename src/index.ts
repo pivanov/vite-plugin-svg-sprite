@@ -78,6 +78,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
   let watcher: ReturnType<typeof watch> | null = null;
   let hasGeneratedSprite = false;
   let viteConfig: any = null;
+  let spriteTimestamp = Date.now();
 
   const log = {
     info: (msg: string) => verbose && console.log(`\n${msg}`),
@@ -197,14 +198,6 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     const finalSpriteContent = `${spriteContent.trim()}\n`;
 
     try {
-      if (fs.existsSync(fullPath)) {
-        const existingContent = fs.readFileSync(fullPath, 'utf-8');
-        if (existingContent === finalSpriteContent) {
-          log.info(`💫 SVG sprite already exists in ${path.relative(process.cwd(), targetDir)}`);
-          return;
-        }
-      }
-
       fs.mkdirSync(targetDir, { recursive: true });
       fs.writeFileSync(fullPath, finalSpriteContent);
       log.info(`💫 SVG sprite saved in ${path.relative(process.cwd(), targetDir)}`);
@@ -230,6 +223,8 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
       .on('error', (error) => log.error('Watcher error:', error));
   };
 
+
+
   return {
     name: 'vite-plugin-svg-sprite',
     enforce: 'pre',
@@ -242,6 +237,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
 
       // Generate sprite on initial build
       await generateSvgSprite();
+      spriteTimestamp = Date.now();
 
       const isWatchMode = config.command === 'build' && !!config.build.watch;
 
@@ -259,37 +255,11 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
             svgCache.clear();
             collectedDefs = '';
             await generateSvgSprite();
-            log.info('💫 SVG changed');
+            spriteTimestamp = Date.now(); // Force virtual module update
 
             if (fileName) {
               const publicDir = config.build.outDir;
               writeSpriteToFile(publicDir, fileName, spriteContent, config.build.assetsDir);
-            }
-
-            // Touch entry file to trigger rebuild
-            try {
-              // Get entry file from Vite config
-              let entry: string | undefined;
-
-              if (config.build.lib && typeof config.build.lib === 'object') {
-                if (typeof config.build.lib.entry === 'string') {
-                  entry = config.build.lib.entry;
-                } else if (Array.isArray(config.build.lib.entry)) {
-                  entry = config.build.lib.entry[0];
-                }
-              }
-
-              if (entry) {
-                const entryFile = path.resolve(process.cwd(), entry);
-                if (fs.existsSync(entryFile)) {
-                  fs.utimesSync(entryFile, new Date(), new Date());
-                  return;
-                }
-              }
-
-              log.warn('Entry file not found - skipping rebuild trigger');
-            } catch (error) {
-              log.error('Failed to trigger rebuild:', error);
             }
           } catch (error) {
             log.error('❌ Error handling SVG change:', error);
@@ -313,6 +283,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
           svgCache.clear();
           collectedDefs = '';
           await generateSvgSprite();
+          spriteTimestamp = Date.now(); // Force virtual module update
           log.info('💫 SVG sprite regenerated');
 
           // Invalidate virtual module and reload
@@ -356,6 +327,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     load(id) {
       if (id === RESOLVED_VIRTUAL_MODULE_ID) {
         return `
+          // Updated at: ${spriteTimestamp}
           const sprite = ${JSON.stringify(spriteContent)};
           export default sprite;
         `;
