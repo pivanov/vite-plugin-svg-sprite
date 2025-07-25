@@ -29,14 +29,14 @@
     "url": "https://github.com/pivanov/vite-plugin-svg-sprite.git"
   },
   "dependencies": {
-    "cheerio": "^1.0.0",
-    "chokidar": "^4.0.1",
+    "cheerio": "^1.1.2",
+    "chokidar": "^4.0.3",
     "svgo": "^4.0.0"
   },
   "devDependencies": {
-    "@types/node": "^24.0.10",
-    "typescript": "^5.4.5",
-    "vite": "^7.0.2"
+    "@types/node": "^24.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.6"
   },
   "peerDependencies": {
     "vite": "^2 || ^3 || ^4 || ^5 || ^6 || ^7"

@@ -25,7 +25,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
   const {
     iconDirs,
     symbolId = '[dir]-[name]',
-    svgDomId = 'svg-sprite',
+    svgDomId,
     svgoConfig = {
       plugins: [
         {
@@ -173,10 +173,10 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
 
     if (svgSymbols.length > 0) {
       const defsContent = collectedDefs ? `<defs>${collectedDefs}</defs>` : '';
-      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${style}" id="${svgDomId}">${defsContent}${svgSymbols}</svg>`;
+      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${style}"${svgDomId ? ` id="${svgDomId}"` : ''}>${defsContent}${svgSymbols}</svg>`;
     } else {
       log.warn('No SVG symbols were generated.');
-      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${style}" id="${svgDomId}"></svg>`;
+      spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${style}"${svgDomId ? ` id="${svgDomId}"` : ''}></svg>`;
     }
 
     return spriteContent;
