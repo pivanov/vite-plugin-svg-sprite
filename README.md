@@ -75,7 +75,7 @@ document.body.appendChild(container);
 |--------|------|---------|-------------|
 | `iconDirs` | `string[]` | Required | Directories containing SVG files to be processed into sprites |
 | `symbolId` | `string` | `[dir]-[name]` | Format for symbol IDs. Uses placeholders: `[dir]` (directory name) and `[name]` (file name without extension). Example: `[dir]-[name]` for `icons/home.svg` becomes `icons-home` |
-| `svgDomId` | `string` | `svg-sprite` | ID attribute for the root SVG sprite element in the DOM |
+| `svgDomId` | `string` | `undefined` | ID attribute for the root SVG sprite element in the DOM |
 | `inject` | `'body-last' \| 'body-first'` | `undefined` | Controls where the sprite is injected in the HTML. `body-first` injects at start of body, `body-last` at the end |
 | `svgoConfig` | `object` | See SVGO section | Configuration for SVGO optimization. Override default settings for SVG optimization |
 | `fileName` | `string` | `undefined` | If provided, saves the sprite to a file instead of injecting it. Example: `sprite.svg` |
