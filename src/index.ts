@@ -114,7 +114,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
   };
 
   const generateSvgSprite = async () => {
-    let svgSymbols = '';
+    const svgSymbolsArray: string[] = [];
 
     await Promise.all(
       iconDirs.map(async (dir) => {
@@ -157,7 +157,10 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
                 svgCache.set(cacheKey, $.html($symbol));
               }
 
-              svgSymbols += svgCache.get(cacheKey);
+              const cacheValue = svgCache.get(cacheKey);
+              if (cacheValue) {
+                svgSymbolsArray.push(cacheValue)
+              }
             } catch (error) {
               log.error(
                 `Error reading or processing SVG file: ${filePath}`,
@@ -170,8 +173,8 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     );
 
     const style = 'position:absolute;width:0;height:0;';
-
-    if (svgSymbols.length > 0) {
+      if (svgSymbolsArray.length > 0) {
+      const svgSymbols = svgSymbolsArray.sort().join('');
       const defsContent = collectedDefs ? `<defs>${collectedDefs}</defs>` : '';
       spriteContent = `<svg xmlns="http://www.w3.org/2000/svg" style="${style}"${svgDomId ? ` id="${svgDomId}"` : ''}>${defsContent}${svgSymbols}</svg>`;
     } else {
