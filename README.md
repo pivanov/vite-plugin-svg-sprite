@@ -50,7 +50,11 @@ You can use the generated sprites in two ways:
 
 1. **Direct Import** (when not using inject option):
 ```typescript
+// Default virtual module
 import svgSpriteString from 'virtual:svg-sprite';
+
+// Or with custom virtualModuleName
+import iconsSprite from 'virtual:icons-sprite';
 
 const container = document.createElement('div');
 const shadow = container.attachShadow({ mode: 'open' });
@@ -69,6 +73,24 @@ document.body.appendChild(container);
 </svg>
 ```
 
+**TypeScript:** Add type declarations for your virtual modules in `env.d.ts` or `vite-env.d.ts`:
+```typescript
+declare module 'virtual:svg-sprite' {
+  const content: string;
+  export default content;
+}
+
+declare module 'virtual:icons-sprite' {
+  const content: string;
+  export default content;
+}
+
+declare module 'virtual:file-icons-sprite' {
+  const content: string;
+  export default content;
+}
+```
+
 ## Configuration Options
 
 | Option | Type | Default | Description |
@@ -80,6 +102,7 @@ document.body.appendChild(container);
 | `svgoConfig` | `object` | See SVGO section | Configuration for SVGO optimization. Override default settings for SVG optimization |
 | `fileName` | `string` | `undefined` | If provided, saves the sprite to a file instead of injecting it. Example: `sprite.svg` |
 | `outputDir` | `string` | `undefined` | Custom output directory for the sprite file. If not specified, uses Vite's `assetsDir` (typically `assets/`) when `fileName` is provided |
+| `virtualModuleName` | `string` | `svg-sprite` | Name for the virtual module import. Used when importing the sprite via `virtual:{name}`. Required when using multiple plugin instances with virtual imports |
 | `verbose` | `boolean` | `true` | Enable/disable detailed logging output during plugin operation |
 
 ### Default SVGO Configuration
@@ -195,6 +218,49 @@ svgSpritePlugin({
     ]
   }
 })
+```
+
+### Multiple Sprite Instances with Virtual Modules
+
+```typescript
+// vite.config.ts
+export default {
+  plugins: [
+    svgSpritePlugin({
+      iconDirs: [path.resolve(process.cwd(), 'src/assets/icons')],
+      symbolId: 'icon-[name]',
+      virtualModuleName: 'icons-sprite',
+    }),
+    svgSpritePlugin({
+      iconDirs: [path.resolve(process.cwd(), 'src/assets/file-icons')],
+      symbolId: 'file-[name]',
+      virtualModuleName: 'file-icons-sprite',
+    }),
+  ],
+};
+
+// Usage in your code
+import iconsSprite from 'virtual:icons-sprite';
+import fileIconsSprite from 'virtual:file-icons-sprite';
+
+// Use each sprite separately
+document.body.insertAdjacentHTML('beforeend', iconsSprite);
+document.body.insertAdjacentHTML('beforeend', fileIconsSprite);
+```
+
+### Multiple Sprite Instances with File Output
+
+```typescript
+svgSpritePlugin({
+  iconDirs: [path.resolve(process.cwd(), 'src/assets/svgs')],
+  symbolId: '[dir]-[name]',
+  fileName: 'svg-sprite.svg',
+}),
+svgSpritePlugin({
+  iconDirs: [path.resolve(process.cwd(), 'src/assets/file-icons')],
+  symbolId: '[dir]-[name]',
+  fileName: 'file-icons-sprite.svg',
+}),
 ```
 
 ## Generated Sprite Example

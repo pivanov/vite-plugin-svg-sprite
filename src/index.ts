@@ -16,16 +16,15 @@ interface SvgSpritePluginOptions {
   fileName?: string;
   outputDir?: string;
   verbose?: boolean;
+  virtualModuleName?: string;
 }
-
-const VIRTUAL_MODULE_ID = 'virtual:svg-sprite';
-const RESOLVED_VIRTUAL_MODULE_ID = `\0${VIRTUAL_MODULE_ID}`;
 
 const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
   const {
     iconDirs,
     symbolId = '[dir]-[name]',
     svgDomId,
+    virtualModuleName = 'svg-sprite',
     svgoConfig = {
       plugins: [
         {
@@ -67,6 +66,9 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     outputDir,
     verbose = true,
   } = options;
+
+  const VIRTUAL_MODULE_ID = `virtual:${virtualModuleName}`;
+  const RESOLVED_VIRTUAL_MODULE_ID = `\0${VIRTUAL_MODULE_ID}`;
 
   if (!symbolId.includes('[name]')) {
     throw new Error('SymbolId must contain [name] string!');
@@ -229,7 +231,7 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
 
 
   return {
-    name: 'vite-plugin-svg-sprite',
+    name: `vite-plugin-svg-sprite:${virtualModuleName}`,
     enforce: 'pre',
 
     configResolved: async (config) => {
