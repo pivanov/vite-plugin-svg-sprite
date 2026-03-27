@@ -4,9 +4,10 @@
     "module": "ES6",
     "jsx": "react",
     "declaration": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "lib": [
