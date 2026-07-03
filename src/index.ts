@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import * as cheerio from 'cheerio';
 import { watch } from 'chokidar';
+import render from 'dom-serializer';
+import { findOne } from 'domutils';
+import { parseDocument } from 'htmlparser2';
 import { optimize } from 'svgo';
 
 import type { Plugin } from 'vite';
@@ -132,31 +134,37 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
                   multipass: true,
                 }).data;
 
-                const $ = cheerio.load(optimizedSvg, { xmlMode: true });
-                const $svg = $('svg');
-                const viewBox = $svg.attr('viewBox') || '0 0 24 24';
+                const doc = parseDocument(optimizedSvg, { xmlMode: true });
+                const svgEl = findOne(
+                  (el) => el.name === 'svg',
+                  doc.children,
+                  true,
+                );
 
-                // Create symbol with all original SVG attributes except width/height
-                const $symbol = $('<symbol></symbol>')
-                  .attr('id', generateSymbolId(filePath))
-                  .attr('viewBox', viewBox);
-
-                // Copy all attributes from SVG except width/height
-                const attrs = $svg[0].attribs;
-                for (const [key, value] of Object.entries(attrs)) {
-                  if (key !== 'width' && key !== 'height') {
-                    $symbol.attr(key, value);
-                  }
+                if (!svgEl) {
+                  throw new Error('No <svg> root element found');
                 }
 
-                $symbol.append($svg.children());
+                // Reuse the parsed <svg> as the <symbol>: it keeps the same
+                // children and attributes, minus width/height, plus a
+                // generated id. viewBox is preserved (or defaulted).
+                const viewBox = svgEl.attribs.viewBox || '0 0 24 24';
+                delete svgEl.attribs.width;
+                delete svgEl.attribs.height;
+                svgEl.name = 'symbol';
+                svgEl.attribs.id = generateSymbolId(filePath);
+                svgEl.attribs.viewBox = viewBox;
 
-                const $defs = $svg.find('defs');
-                if ($defs.length > 0) {
-                  collectedDefs += $defs.html();
+                const defsEl = findOne(
+                  (el) => el.name === 'defs',
+                  svgEl.children,
+                  true,
+                );
+                if (defsEl) {
+                  collectedDefs += render(defsEl.children, { xmlMode: true });
                 }
 
-                svgCache.set(cacheKey, $.html($symbol));
+                svgCache.set(cacheKey, render(svgEl, { xmlMode: true }));
               }
 
               const cacheValue = svgCache.get(cacheKey);
@@ -340,18 +348,25 @@ const svgSpritePlugin = (options: SvgSpritePluginOptions): Plugin => {
     },
 
     transformIndexHtml: (html: string) => {
-      if (inject) {
-        const $ = cheerio.load(html);
-        switch (inject) {
-          case 'body-first':
-            $('body').prepend(spriteContent);
-            break;
-          default:
-            $('body').append(spriteContent);
-        }
-        return $.html();
+      if (!inject) {
+        return html;
       }
-      return html;
+
+      // Insert the sprite without reparsing/reformatting the whole document.
+      if (inject === 'body-first') {
+        const openBody = html.match(/<body[^>]*>/i);
+        if (openBody?.index !== undefined) {
+          const at = openBody.index + openBody[0].length;
+          return html.slice(0, at) + spriteContent + html.slice(at);
+        }
+        return spriteContent + html;
+      }
+
+      const closeBody = html.toLowerCase().lastIndexOf('</body>');
+      if (closeBody !== -1) {
+        return html.slice(0, closeBody) + spriteContent + html.slice(closeBody);
+      }
+      return html + spriteContent;
     },
 
     generateBundle(this, options) {
